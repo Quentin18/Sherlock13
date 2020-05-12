@@ -29,7 +29,7 @@ struct _client {
 int nbClients;
 int fsmServer;	// Etat du serveur : 0 (attente de connexion) ou 1 (jeu)
 int deck[13] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};	// Cartes
-int tableCartes[4][8];	// Table des objets (4 joueurs, 8 symboles)
+int tableCartes[4][8];	// Table des symboles (4 joueurs, 8 symboles)
 char *nomcartes[] = {
 	"Sebastian Moran",
 	"Irene Adler",
@@ -249,6 +249,7 @@ int main(int argc, char *argv[]) {
     int sockfd, newsockfd, portno;
     socklen_t clilen;
     char buffer[256];
+	char reply[256];
     struct sockaddr_in serv_addr, cli_addr;
     int n;
 	int i, j;
@@ -257,7 +258,6 @@ int main(int argc, char *argv[]) {
 	char clientIpAddress[256], clientName[256];
 	int clientPort;
 	int id;
-	char reply[256];
 
 	if (argc < 2) {	// Vérifie si le numéro de port est donné
 		fprintf(stderr,"ERROR, no port provided\n");
@@ -377,7 +377,7 @@ int main(int argc, char *argv[]) {
 						broadcastMessage(reply);
 					}
 					break;
-				case 'O':	// Message 'O' : Objet (demande d'objet à tout le monde)
+				case 'O':	// Message 'O' : Others (demande d'un symbole à tout le monde)
                     sscanf(buffer, "O %d %d", &id, &j);
 					for (i = 0 ; i < 4 ; i++) {
 						if (i != id) {
@@ -394,7 +394,7 @@ int main(int argc, char *argv[]) {
 					sprintf(reply, "M %d", joueurCourant);
 					broadcastMessage(reply);
 					break;
-				case 'S':	// Message 'S' : Symbole (demande du nombre d'un symbole à un seul joueur)
+				case 'S':	// Message 'S' : Solo (demande du nombre d'un symbole à un seul joueur)
                     sscanf(buffer, "S %d %d %d", &id, &i, &j);
 					sprintf(reply, "V %d %d %d", i, j, tableCartes[i][j]);
 					broadcastMessage(reply);

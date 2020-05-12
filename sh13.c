@@ -32,10 +32,10 @@ char gName[256];		// Nom du joueur
 char gNames[4][256];	// Noms des joueurs
 int gId;		// Id du joueur
 int joueurSel;	// Joueur sélectionné
-int objetSel;	// Objet sélectionné
-int guiltSel;	// Coupable sélectionné
-int guiltGuess[13];		// Tableau des croix à droite des perso
-int tableCartes[4][8];	// Tableau des objets
+int objetSel;	// Symbole sélectionné
+int guiltSel;	// Suspect sélectionné
+int guiltGuess[13];		// Tableau des croix à droite des suspects
+int tableCartes[4][8];	// Tableau des symboles
 int b[3];	// Cartes possédées
 int goEnabled;	// Bouton go activé
 int connectEnabled;	// Bouton connect activé
@@ -48,6 +48,7 @@ int joueurCourant;	// Numéro du joueur courant
 int eliminated[4];	// Liste de 0 et 1 : 1 si joueur éliminé, 0 sinon
 int nbPlayersRemaining;	// Nombre de joueurs non élimminés
 int guilty;	// Numéro du coupable
+char info[300];	// Bandeau des infos
 
 char *nbobjets[] = {"5", "5", "5", "5", "4", "3", "3", "3"};
 char *nbnoms[] = {
@@ -101,7 +102,7 @@ void *fn_serveur_tcp(void *arg) {
 			printf("read error\n");
 			exit(1);
 		}
-		// printf("%s",gbuffer);
+		// printf("%s", gbuffer);
 		synchro = 1;
 		while (synchro);
      }
@@ -196,7 +197,6 @@ int main(int argc, char** argv) {
 	int mx, my;
 	char sendBuffer[1024];
 	char lname[256];
-	char info[300];	// Bandeau des infos
 
     if (argc < 6) {
         printf("<app> <Main server ip address> <Main server port> <Client ip address> <Client port> <player name>\n");
@@ -364,13 +364,13 @@ int main(int argc, char** argv) {
 							goEnabled = 0;
 						}
 						else if ((objetSel != -1) && (joueurSel == -1)) {
-							// Message 'O' : Objet (demande d'objet à tout le monde)
+							// Message 'O' : Others (demande d'un symbole à tout le monde)
 							sprintf(sendBuffer, "O %d %d", gId, objetSel);
 							sendMessageToServer(gServerIpAddress, gServerPort, sendBuffer);
 							goEnabled = 0;
 						}
 						else if ((objetSel != -1) && (joueurSel != -1)) {
-							// Message 'S' : Symbole (demande du nombre d'un symbole à un seul joueur)
+							// Message 'S' : Solo (demande du nombre d'un symbole à un seul joueur)
 							sprintf(sendBuffer, "S %d %d %d", gId, joueurSel, objetSel);
 							sendMessageToServer(gServerIpAddress, gServerPort, sendBuffer);
 							goEnabled = 0;
@@ -433,12 +433,12 @@ int main(int argc, char** argv) {
 					initReplay();
 					resetSel();
 					break;
-				// Message 'H' -> le joueur reçois un emoji avec le numéro du joueur et le numéro d'emoji
+				// Message 'H' : le joueur reçois un emoji avec le numéro du joueur et le numéro d'emoji
 				case 'H':
 					sscanf(gbuffer, "H %d %d", &i, &j);
 					emojiPlayers[i] = j;
 					break;
-				// Message 'R' -> le joueur recoit une demande de replay d'un joueur
+				// Message 'R' : le joueur recoit une demande de replay d'un joueur
 				case 'R':
 					sscanf(gbuffer, "R %d", &i);
 					nbReplayPlayers++;
@@ -865,6 +865,7 @@ int main(int argc, char** argv) {
 		SDL_DestroyTexture(texture_emoji[i]);
 		SDL_FreeSurface(emoji[i]);
 	}
+
 	SDL_DestroyTexture(texture_gobutton);
     SDL_FreeSurface(gobutton);
 	SDL_DestroyTexture(texture_connectbutton);
